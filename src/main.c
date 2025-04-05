@@ -1,14 +1,30 @@
-#include "pipex.h"
+#include "../include/pipex.h"
 
-int main(int ac, int *av)
+void    parse_args(int ac, char **av)
 {
+    (void)av;
+
     if (ac < 5)
     {
-        ft_printf("Usage: ./pipex file1 cmd1 cmd2 file2\n");
         write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 37);
         exit(1);
     }
+    if (access(av[1], F_OK | R_OK) == -1)
+    {
+        perror("Error: file1");
+        // ft_printf("Error: file1: %s\n", strerror(errno));
+        exit(1);
+    }
+    if (access(av[ac - 1], W_OK) == -1)
+    {
+        perror("Error: file2");
+        exit(1);
+    }
+}
 
-    ft_putchar('\n');
+int main(int ac, char **av)
+{
+    parse_args(ac, av);
+    ft_putchar_fd('\n', 1);
     return (0);
 }
