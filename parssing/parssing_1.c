@@ -1,73 +1,83 @@
 #include "../include/pipex.h"
 
-t_parse *init_parse_struct(void)
-{
-    t_parse *list;
-
-    list = (t_parse *)malloc(sizeof(t_parse));
-    if (!list)
-    {
-        write(2, "Error: memory allocation failed\n", 31);
-        exit(1);
-    }
-    init_list(list);
-    return (list);
-}
-
-int check_arg_count(int ac, t_parse *list)
+int check_arg_count(int ac)
 {
     if (ac < 5)
     {
-        free(list);
-       return (write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 37), 1);
+        ft_putstr_fd("Usage: ./pipex file1 cmd1 cmd2 file2\n", 2);
+        return (1);
     }
-    return (0);
-}
-
-int check_file1(char *file1, t_parse *list)
-{
-    if (access(file1, F_OK | R_OK) == -1)
-        return (free_perror(list, "Error: file1"), 1);
-    return (0);
-}
-
-int check_file2(t_parse *list)
-{
-    if (access(list->file2, W_OK) == 0)
-        return (0); // file2 existe et est inscriptible, on peut continuer
-    if (errno == ENOENT)
-    {
-        ft_strlcpy(list->parent_dir, list->file2, PATH_MAX);
-        list->last_slash = ft_strrchr(list->parent_dir, '/');
-        if (list->last_slash == NULL)
-            ft_strlcpy(list->parent_dir, ".", 2);
-        else if (list->last_slash == list->parent_dir)
-            ft_strlcpy(list->parent_dir, "/", 2);
-        else
-        {
-            list->i = list->last_slash - list->parent_dir;
-            list->parent_dir[list->i] = '\0';
-        }
-        if (access(list->parent_dir, W_OK) == -1)
-            return (free_perror(list, "Error: file2 (parent directory)"), 1);
-    }
-    else
-        return (free_perror(list, "Error: file2"), 1);
     return (0);
 }
 
 void parse_args(int ac, char **av)
 {
-    t_parse *list;
+    t_args_file list_f;
+    int status;
 
-    list = init_parse_struct();
-    if (check_arg_count(ac, list))
+    if (check_arg_count(ac))
         exit(1);
-    if (check_file1(av[1], list))
+    if (check_file1(av[1]))
+    {
+        ft_putstr_fd("Error: file1: No such file or directory\n", 2);
+    }
+    if (check_file2_with_path(av[ac - 1]))
         exit(1);
-    list->file2 = av[ac - 1];
-    if (check_file2(list))
-        exit(1);
-    parse_cmd(av[2], av[3]);
-    free(list);
+    ft_memset(&list_f, 0, sizeof(t_args_file));
+    parse_cmd(av[2], av[3], &list_f);
+    status = execute_pipex(av[1], av[4], &list_f);
+    if (status != 0)
+        exit(status);
+}
+
+int check_file1(char *file1)
+{
+    if (access(file1, F_OK | R_OK) == -1)
+        return (1);
+    return (0);
+}
+
+int check_file2_with_path(const char *path)
+{
+    char    parent_dir[PATH_MAX];
+    char    *last_slash;
+    int     i;
+
+    if (access(path, W_OK) == 0)
+        return (0);
+    if (errno == ENOENT)
+    {
+        ft_strlcpy(parent_dir, path, PATH_MAX);
+        last_slash = ft_strrchr(parent_dir, '/');
+        if (last_slash == NULL)
+            ft_strlcpy(parent_dir, ".", 2);
+        else if (last_slash == parent_dir)
+            ft_strlcpy(parent_dir, "/", 2);
+        else
+        {
+            i = last_slash - parent_dir;
+            parent_dir[i] = '\0';
+        }
+        if (access(parent_dir, W_OK) == -1)
+        {
+            ft_putstr_fd("Error: file2 (parent directory): Permission denied\n", 2);
+            return (1);
+        }
+    }
+    else
+    {
+        ft_putstr_fd("Error: file2: Permission denied\n", 2);
+        return (1);
+    }
+    return (0);
+}
+
+void parse_cmd(char *cmd1, char *cmd2, t_args_file *list_f)
+{
+    list_f->cmd1_args = extract_cmd(cmd1);
+    if (list_f->cmd1_args[0])
+        check_cmd_executable(list_f->cmd1_args);
+    list_f->cmd2_args = extract_cmd(cmd2);
+    if (list_f->cmd2_args[0])
+        check_cmd_executable(list_f->cmd2_args);
 }

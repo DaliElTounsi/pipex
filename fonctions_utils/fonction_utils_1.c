@@ -1,52 +1,70 @@
 #include "../include/pipex.h"
 
-void init_list(t_parse *list)
+void pip_is_fisrt(char *input_file, void *list, int pipefd[2])
 {
-    list->path_env = NULL;
-    list->path = NULL;
-    list->path_copy = NULL;
-    ft_memset(list->cmd_path, 0, PATH_MAX); // Initialiser le tableau à 0
-    list->found = 0;
-    list->file2 = NULL;
-    list->last_slash = NULL;
-    ft_memset(list->parent_dir, 0, PATH_MAX); // Initialiser le tableau à 0
-    list->i = 0;
-}
+    int fd;
 
-void fonct_list_path(t_parse *list, char *cmd)
-{
-    while (list->path)
+    (void)list;
+    fd = open(input_file, O_RDONLY);
+    if (fd == -1)
     {
-        ft_strlcpy(list->cmd_path, list->path, PATH_MAX);
-        ft_strlcat(list->cmd_path, "/", PATH_MAX);
-        ft_strlcat(list->cmd_path, cmd, PATH_MAX);
-        if (access(list->cmd_path, X_OK) == 0)
-        {
-            list->found = 1;
-            break;
-        }
-        list->path = ft_strtok(NULL, ":");
+        dup2(STDIN_FILENO, pipefd[0]);
+        close(pipefd[0]);
+        close(pipefd[1]);
+        return ;
     }
+    dup2(fd, STDIN_FILENO);
+    close(fd);
+    dup2(pipefd[1], STDOUT_FILENO);
+    close(pipefd[0]);
+    close(pipefd[1]);
 }
 
-void    free_perror(t_parse *list, char *str)
+void pip_is_second(char *output_file, void *list, int pipefd[2])
 {
+    int fd;
+
+    (void)list;
+    if (ft_strncmp(output_file, "/dev/stdout", ft_strlen("/dev/stdout")) == 0)
     {
-        free(list);
-        perror(str);
+        dup2(pipefd[0], STDIN_FILENO);
+        close(pipefd[0]);
+        close(pipefd[1]);
+        return ;
+    }
+    fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1)
+    {
+        ft_putstr_fd("Error: file2: Permission denied\n", 2);
         exit(1);
     }
+    dup2(pipefd[0], STDIN_FILENO);
+    close(pipefd[0]);
+    close(pipefd[1]);
+    dup2(fd, STDOUT_FILENO);
+    close(fd);
 }
 
-void    free_cmd(char *cmd1, char *cmd2, t_parse *list)
+void free_args(char **args)
 {
-    free(cmd1);
-    free(cmd2);
-    free(list);
+    int i;
+
+    if (!args)
+        return ;
+    i = 0;
+    while (args[i])
+    {
+        free(args[i]);
+        i++;
+    }
+    free(args);
 }
 
-void    free_list_exit(t_parse *list)
+void free_cmd(char *cmd1, char *cmd2, void *list)
 {
-    free(list);
-    exit(1);
+    if (cmd1)
+        free(cmd1);
+    if (cmd2)
+        free(cmd2);
+    (void)list;
 }
