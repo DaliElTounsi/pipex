@@ -6,7 +6,7 @@
 /*   By: mohchams <mohchams@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/08 14:36:00 by mohchams          #+#    #+#             */
-/*   Updated: 2025/05/06 19:59:17 by mohchams         ###   ########.fr       */
+/*   Updated: 2025/05/06 20:41:47 by mohchams         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ char	*search_in_paths(char *cmd_name, char **env)
 		path = ft_strjoin(ft_strjoin(paths[i], "/"), cmd_name);
 		if (access(path, X_OK) == 0)
 			return (free_split(paths), path);
+		ft_putstr_fd("JE SUIS PASSE", 2);
 		free(path);
 	}
 	free_split(paths);
