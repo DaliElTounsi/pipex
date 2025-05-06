@@ -1,38 +1,33 @@
 NAME = pipex
 
-SRC = src/main.c src/exec.c parssing/parssing_1.c parssing/parssing_2.c fonctions_utils/fonction_utils_1.c \
-	fonctions_utils/fonction_utils_2.c
-OBJ = $(SRC:.c=.o)
+SRCS = src/pipex.c src/parsing_1.c
 
+OBJS = $(SRCS:.c=.o)
+
+CC = cc
 CFLAGS = -Wall -Wextra -Werror
+INCLUDES = -I. -I./libft
 LIBFT = libft/libft.a
 
-## @brief Compile l'exécutable pipex (règle par défaut).
 all: $(NAME)
 
-## @brief Compile la bibliothèque libft.a si nécessaire.
+$(NAME): $(OBJS) $(LIBFT)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $(NAME)
+
+src/%.o: src/%.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
 $(LIBFT):
-	@make -C libft
+	$(MAKE) -C libft
 
-## @brief Compile les fichiers .c en .o
-%.o: %.c
-	@cc $(CFLAGS) -c $< -o $@
-
-## @brief Lie les fichiers objets avec libft.a pour créer l'exécutable pipex.
-$(NAME): $(LIBFT) $(OBJ)
-	@cc $(OBJ) $(LIBFT) -o $(NAME)
-
-## @brief Supprime les fichiers objets et nettoie libft.
 clean:
-	@rm -f $(OBJ)
-	@make -C libft clean
+	rm -f $(OBJS)
+	$(MAKE) -C libft clean
 
-## @brief Supprime l'exécutable, les fichiers objets, et nettoie libft complètement.
 fclean: clean
-	@rm -f $(NAME)
-	@make -C libft fclean
+	rm -f $(NAME)
+	$(MAKE) -C libft fclean
 
-## @brief Nettoie tout et recompile.
 re: fclean all
 
 .PHONY: all clean fclean re
