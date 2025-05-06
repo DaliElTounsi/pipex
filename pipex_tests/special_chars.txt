@@ -1,2 +1,0 @@
-Ligne avec des caractères spéciaux : é è à ç ù € $ \ " ' ` | > < ; & * ? ! 
-Second ligne avec des #$%^&*() symboles

@@ -6,7 +6,7 @@
 /*   By: mohchams <mohchams@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/08 14:34:34 by mohchams          #+#    #+#             */
-/*   Updated: 2025/05/06 12:45:33 by mohchams         ###   ########.fr       */
+/*   Updated: 2025/05/06 18:44:27 by mohchams         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 # include <stdio.h>
 # include <errno.h>
 
-void	child_proc(char **av, char **env, int *fd);
+void	first_child(char **av, char **env, int *fd);
 void	second_child(char **av, char **env, int *fd);
 char	*search_in_paths(char *cmd_name, char **env);
 char	*get_cmd(char *cmd_str, char **env);

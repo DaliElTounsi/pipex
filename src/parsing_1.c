@@ -6,7 +6,7 @@
 /*   By: mohchams <mohchams@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/08 14:36:00 by mohchams          #+#    #+#             */
-/*   Updated: 2025/05/06 13:12:34 by mohchams         ###   ########.fr       */
+/*   Updated: 2025/05/06 19:59:17 by mohchams         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ char	*get_cmd(char *cmd_str, char **env)
 
 	cmd = ft_split(cmd_str, ' ');
 	if (!cmd || !cmd[0])
-		return (write(2, "command not found\n", 18), free_split(cmd), NULL);
+		return (ft_putendl_fd("command not found", 2), free_split(cmd), NULL);
 	if (access(cmd[0], X_OK) == 0)
 	{
 		path = ft_strdup(cmd[0]);
@@ -52,10 +52,10 @@ char	*search_in_paths(char *cmd_name, char **env)
 	while (env[i] && !ft_strnstr(env[i], "PATH=", 5))
 		i++;
 	if (!env[i])
-		return (write(2, "PATH not found\n", 15), NULL);
+		return (ft_putendl_fd("PATH not found", 2), NULL);
 	paths = ft_split(env[i] + 5, ':');
 	if (!paths)
-		return (write(2, "malloc fail\n", 12), NULL);
+		return (ft_putendl_fd("malloc fail", 2), NULL);
 	i = -1;
 	while (paths[++i])
 	{
@@ -65,11 +65,11 @@ char	*search_in_paths(char *cmd_name, char **env)
 		free(path);
 	}
 	free_split(paths);
-	write(2, "command not found\n", 18);
+	ft_putendl_fd("command not found", 2);
 	return (NULL);
 }
 
-void	child_proc(char **av, char **env, int *fd)
+void	first_child(char **av, char **env, int *fd)
 {
 	int		fd_in;
 	char	*path;
@@ -89,7 +89,7 @@ void	child_proc(char **av, char **env, int *fd)
 		exit(1);
 	cmd = ft_split(av[2], ' ');
 	if (!cmd)
-		return (write(2, "memory allocation failed\n", 25), free(path), exit(1));
+		return (ft_putendl_fd("memory alloc failed", 2), free(path), exit(1));
 	execve(path, cmd, env);
 	perror("execve");
 	free(path);
@@ -117,7 +117,7 @@ void	second_child(char **av, char **env, int *fd)
 		exit(1);
 	cmd = ft_split(av[3], ' ');
 	if (!cmd)
-		return (write(2, "memory allocation failed\n", 25), free(path), exit(1));
+		return (ft_putendl_fd("memory alloc failed", 2), free(path), exit(1));
 	execve(path, cmd, env);
 	perror("execve");
 	free(path);
